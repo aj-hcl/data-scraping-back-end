@@ -33,13 +33,13 @@ class TagSaver(Resource):
             if(TagModel.find_tag(url.uid, t['tag_name'], t['tag_key']) is None):
                 models.append(TagModel(url.uid, t['tag_name'], t['tag_data'], t['tag_key']))
             else:
-                return {"message":"tag already in database"}, 500
+                return {"message":"tag already in database"}
 
 
         try:
             TagModel.save_list_to_db(models)
         except Exception as e:
-            return {'message':str(e)}, 500
+            return {'message': "Error saving data"}, 500
 
 
         return {'message':'Data saved successfully'}

@@ -6,13 +6,8 @@ from bs4 import BeautifulSoup
 
 class Validator(Resource):
     post_parser = reqparse.RequestParser()
-    post_parser.add_argument('url',
+    post_parser.add_argument('checkboxesChecked',
         type = str,
-        required = True,
-        help = "Invalid input"
-    )
-    post_parser.add_argument('tags',
-        type = dict,
         action = "append",
         required = True,
         help = "Invalid input"
@@ -22,30 +17,36 @@ class Validator(Resource):
     def post(self):
         args = Validator.post_parser.parse_args()
 
-        checks = args["tags"]
-        
+        checks = args["checkboxesChecked"]
+        url = checks[0]
+
         #check input length
         length = len(checks)
-        if(length < 1):
+        if(length < 2):
             return {"message":"Input must have at least some data"}, 400
 
-        #get tags from url
-        url = args["url"]
+        dicts = []
+        for i in range(1,length):
+            checks[i] = checks[i].replace("'",'"')
+            try:
+                dicts.append(json.loads(checks[i]))
+            except:
+                return {"message":"Invalid input"}, 400
 
 
         tags = []
         try:
-            for t in checks:
+            for d in dicts:
                 
                 tag = {}
-                for key in t:
+                for key in d:
                     
                     if(key == "tag_key"):
                         
-                        tag[key] = t[key]
+                        tag[key] = d[key]
                     else:
                         tag["tag_name"] = key
-                        tag["tag_data"] = t[key]
+                        tag["tag_data"] = d[key]
                 
                 tags.append(tag)
 
@@ -70,7 +71,7 @@ class Validator(Resource):
         required = True,
         help = "Invalid input"
     )
-    def get(self):
+    def put(self):
         args = Validator.get_parser.parse_args()
         try:
             response = requests.get("http://127.0.0.1:4000/tag_saver", json = {"url":args['url']})

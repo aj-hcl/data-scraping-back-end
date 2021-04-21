@@ -115,6 +115,37 @@ class Scraper(Resource):
                 return tags
         except:
             pass
+        
+        tags = []
+        try:
+            head = soup.find('thead')
+            labels = []
+            for c in head.findAll('th'):
+                labels.append(c.text.strip())
+            body = soup.find('tbody')
+            for i in body.findAll('tr'):
+                colIndex = 0
+                name = ''
+                
+                for j in i.findAll('td'):
+                    tag = {}
+                    if colIndex == 0:
+                        name_tag = j.find('div',{'class': 'd3-o-club-fullname'})
+                        if not name_tag:
+                            name_tag = j.find('a',{'class': 'd3-o-player-fullname nfl-o-cta--link'})
+                        name = name_tag.text.strip()
+                        colIndex += 1
+                        continue
+                    tag[labels[colIndex]] = j.text.strip()
+                    tag['tag_key'] = name
+                    tags.append(tag)
+                    colIndex += 1
+                
+
+            if tags: #if teams is not empty, else try a different site
+                return tags
+        except Exception as e:
+            pass
 
 
 
